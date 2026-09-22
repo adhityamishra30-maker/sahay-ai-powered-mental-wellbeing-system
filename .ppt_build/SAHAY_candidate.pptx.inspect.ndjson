@@ -1,0 +1,146 @@
+{"kind":"deck","id":"pr/k1fyro","name":"Deck"}
+{"kind":"layout","layoutId":"bfd84fde-c61c-4797-bd32-12263519bfdc","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"b813bb1c-fb92-4361-a982-87032003dad8","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/xozxx1","slide":1,"title":"SMART INDIA HACKATHON 2026","textShapes":9}
+{"kind":"textbox","id":"sh/6t4ve14f","slide":1,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,28,790,52]}
+{"kind":"textbox","id":"sh/twvu9w3q","slide":1,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,25,140,62]}
+{"kind":"textbox","id":"sh/8vmdgrm5","slide":1,"text":"SAHAY","textPreview":"SAHAY","textChars":5,"textLines":1,"bbox":[68,146,580,88]}
+{"kind":"textbox","id":"sh/jqtc3m5o","slide":1,"text":"AI-powered victim well-being and\ndistress monitoring system","textPreview":"AI-powered victim well-being and | distress monitoring system","textChars":59,"textLines":2,"bbox":[68,238,640,82]}
+{"kind":"shape","id":"sh/ypkvah43","slide":1,"bbox":[68,338,610,3]}
+{"kind":"textbox","id":"sh/lsvu5w3u","slide":1,"text":"Problem Statement ID: [Add official SIH ID]","textPreview":"Problem Statement ID: [Add official SIH ID]","textChars":43,"textLines":1,"bbox":[68,378,520,28]}
+{"kind":"textbox","id":"sh/kr2dcrm9","slide":1,"text":"Theme: Social welfare and citizen support\nCategory: Software\nTeam ID: [Add Team ID]\nTeam Name: [Add Team Name]","textPreview":"Theme: Social welfare and citizen support | Category: Software | Team ID: [Add Team ID] | Team Name: [Add Team Name]","textChars":110,"textLines":4,"bbox":[68,423,520,130]}
+{"kind":"shape","id":"sh/3mxcf6ls","slide":1,"bbox":[760,142,385,360]}
+{"kind":"textbox","id":"sh/ilovml47","slide":1,"text":"A safer path\nfrom check-in\nto support","textPreview":"A safer path | from check-in | to support","textChars":37,"textLines":3,"bbox":[805,220,295,115]}
+{"kind":"textbox","id":"sh/oje50b2d","slide":1,"text":"Consent-first check-ins\nStructured AI risk assessment\nCounsellor follow-up and audit trail","textPreview":"Consent-first check-ins | Structured AI risk assessment | Counsellor follow-up and audit trail","textChars":90,"textLines":3,"bbox":[805,363,295,78]}
+{"kind":"textbox","id":"sh/9knm9gjy","slide":1,"text":"Prepared for Smart India Hackathon 2026","textPreview":"Prepared for Smart India Hackathon 2026","textChars":39,"textLines":1,"bbox":[68,630,550,22]}
+{"kind":"notes","id":"nt/xozxx1","slide":1,"text":"Source: SAHAY project scope and current application implementation."}
+{"kind":"slide","id":"sl/6d2dpu","slide":2,"title":"SMART INDIA HACKATHON 2026","textShapes":16}
+{"kind":"textbox","id":"sh/7e9cnehw","slide":2,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,26,700,48]}
+{"kind":"textbox","id":"sh/sfitwzih","slide":2,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,24,140,58]}
+{"kind":"textbox","id":"sh/tgrup4z2","slide":2,"text":"CHALLENGES AND PROBLEM","textPreview":"CHALLENGES AND PROBLEM","textChars":22,"textLines":1,"bbox":[52,95,940,40]}
+{"kind":"shape","id":"sh/y90bqp0f","slide":2,"bbox":[0,667,1280,53]}
+{"kind":"textbox","id":"sh/ja9cjuhk","slide":2,"text":"SAHAY | AI-powered victim well-being and distress monitoring","textPreview":"SAHAY | AI-powered victim well-being and distress monitoring","textChars":60,"textLines":1,"bbox":[52,680,830,22]}
+{"kind":"textbox","id":"sh/kbitszi5","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1175,678,56,24]}
+{"kind":"textbox","id":"sh/5crul4zq","slide":2,"text":"Victims need a safe way to communicate distress before it becomes a crisis.","textPreview":"Victims need a safe way to communicate distress before it becomes a crisis.","textChars":75,"textLines":1,"bbox":[58,155,1060,38]}
+{"kind":"shape","id":"sh/algbmp03","slide":2,"bbox":[58,242,350,260]}
+{"kind":"shape","id":"sh/bmpsfaho","slide":2,"bbox":[78,264,54,30]}
+{"kind":"textbox","id":"sh/zmtknqtk","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[90,271,30,17]}
+{"kind":"textbox","id":"sh/el03ulsf","slide":2,"text":"Delayed escalation","textPreview":"Delayed escalation","textChars":18,"textLines":1,"bbox":[78,320,300,30]}
+{"kind":"textbox","id":"sh/1ob2p0bq","slide":2,"text":"A person may not reach a counsellor when their condition changes.","textPreview":"A person may not reach a counsellor when their condition changes.","textChars":65,"textLines":1,"bbox":[78,370,300,82]}
+{"kind":"shape","id":"sh/0n2lwva5","slide":2,"bbox":[456,242,350,260]}
+{"kind":"shape","id":"sh/nqtkratw","slide":2,"bbox":[476,264,54,30]}
+{"kind":"textbox","id":"sh/mpk3y5sb","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[488,271,30,17]}
+{"kind":"textbox","id":"sh/9sb2t0b2","slide":2,"text":"Fragmented follow-up","textPreview":"Fragmented follow-up","textChars":20,"textLines":1,"bbox":[476,320,300,30]}
+{"kind":"textbox","id":"sh/or2l0fah","slide":2,"text":"Case updates, interventions, and accountability can remain disconnected.","textPreview":"Case updates, interventions, and accountability can remain disconnected.","textChars":72,"textLines":1,"bbox":[476,370,300,82]}
+{"kind":"shape","id":"sh/3upkf6ts","slide":2,"bbox":[854,242,350,260]}
+{"kind":"shape","id":"sh/2tgjm1s7","slide":2,"bbox":[874,264,54,30]}
+{"kind":"textbox","id":"sh/69onu9cf","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[886,271,30,17]}
+{"kind":"textbox","id":"sh/7axoned0","slide":2,"text":"Privacy risk","textPreview":"Privacy risk","textChars":12,"textLines":1,"bbox":[874,320,300,30]}
+{"kind":"textbox","id":"sh/8b65wjul","slide":2,"text":"Sensitive information needs consent, role-based access, and an audit trail.","textPreview":"Sensitive information needs consent, role-based access, and an audit trail.","textChars":75,"textLines":1,"bbox":[874,370,300,82]}
+{"kind":"textbox","id":"sh/tcf6pov6","slide":2,"text":"SAHAY brings the signal, support workflow, and privacy controls into one system.","textPreview":"SAHAY brings the signal, support workflow, and privacy controls into one system.","textChars":80,"textLines":1,"bbox":[58,548,1040,30]}
+{"kind":"notes","id":"nt/6d2dpu","slide":2,"text":"Source: SAHAY project problem framing. Claims describe the proposed workflow, not measured outcomes."}
+{"kind":"slide","id":"sl/ymvjzq","slide":3,"title":"SMART INDIA HACKATHON 2026","textShapes":26}
+{"kind":"textbox","id":"sh/be5ov21o","slide":3,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,26,700,48]}
+{"kind":"textbox","id":"sh/cfepo729","slide":3,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,24,140,58]}
+{"kind":"textbox","id":"sh/dgn6xcju","slide":3,"text":"TECHNICAL APPROACH","textPreview":"TECHNICAL APPROACH","textChars":18,"textLines":1,"bbox":[52,95,940,40]}
+{"kind":"shape","id":"sh/29cnixk7","slide":3,"bbox":[0,667,1280,53]}
+{"kind":"textbox","id":"sh/3alor21s","slide":3,"text":"SAHAY | AI-powered victim well-being and distress monitoring","textPreview":"SAHAY | AI-powered victim well-being and distress monitoring","textChars":60,"textLines":1,"bbox":[52,680,830,22]}
+{"kind":"textbox","id":"sh/obu5kn2d","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1175,678,56,24]}
+{"kind":"textbox","id":"sh/pcn6tsjy","slide":3,"text":"A monitored workflow turns a voluntary check-in into a traceable support action.","textPreview":"A monitored workflow turns a voluntary check-in into a traceable support action.","textChars":80,"textLines":1,"bbox":[58,150,1110,32]}
+{"kind":"shape","id":"sh/m5g7uhkr","slide":3,"bbox":[52,250,205,220]}
+{"kind":"textbox","id":"sh/n6po3m1w","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[72,272,70,28]}
+{"kind":"textbox","id":"sh/3ux0vudg","slide":3,"text":"Consent","textPreview":"Consent","textChars":7,"textLines":1,"bbox":[72,326,165,32]}
+{"kind":"textbox","id":"sh/2toj2pcv","slide":3,"text":"The user chooses what to share.","textPreview":"The user chooses what to share.","textChars":31,"textLines":1,"bbox":[72,382,165,65]}
+{"kind":"textbox","id":"sh/pwfix4vm","slide":3,"text":"›","textPreview":"›","textChars":1,"textLines":1,"bbox":[260,333,30,40]}
+{"kind":"shape","id":"sh/4v614zu1","slide":3,"bbox":[296,250,205,220]}
+{"kind":"textbox","id":"sh/bixkzeds","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[316,272,70,28]}
+{"kind":"textbox","id":"sh/qxoj69c7","slide":3,"text":"Check-in","textPreview":"Check-in","textChars":8,"textLines":1,"bbox":[316,326,165,32]}
+{"kind":"textbox","id":"sh/dkz214vi","slide":3,"text":"Mood, message, and optional district.","textPreview":"Mood, message, and optional district.","textChars":37,"textLines":1,"bbox":[316,382,165,65]}
+{"kind":"textbox","id":"sh/cjq18jux","slide":3,"text":"›","textPreview":"›","textChars":1,"textLines":1,"bbox":[504,333,30,40]}
+{"kind":"shape","id":"sh/zmhk3edo","slide":3,"bbox":[540,250,205,220]}
+{"kind":"textbox","id":"sh/yl8ja9c3","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[560,272,70,28]}
+{"kind":"textbox","id":"sh/utcvih0n","slide":3,"text":"Assessment","textPreview":"Assessment","textChars":10,"textLines":1,"bbox":[560,326,165,32]}
+{"kind":"textbox","id":"sh/vulcrm18","slide":3,"text":"Server-side AI returns structured risk.","textPreview":"Server-side AI returns structured risk.","textChars":39,"textLines":1,"bbox":[560,382,165,65]}
+{"kind":"textbox","id":"sh/wvedkrit","slide":3,"text":"›","textPreview":"›","textChars":1,"textLines":1,"bbox":[748,333,30,40]}
+{"kind":"shape","id":"sh/hwnutcjy","slide":3,"bbox":[784,250,205,220]}
+{"kind":"textbox","id":"sh/mpcvex0b","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[804,272,70,28]}
+{"kind":"textbox","id":"sh/7qlcn21w","slide":3,"text":"Alert","textPreview":"Alert","textChars":5,"textLines":1,"bbox":[804,326,165,32]}
+{"kind":"textbox","id":"sh/8rudg7ih","slide":3,"text":"High-risk cases enter the counsellor queue.","textPreview":"High-risk cases enter the counsellor queue.","textChars":43,"textLines":1,"bbox":[804,382,165,65]}
+{"kind":"textbox","id":"sh/9s3upcj2","slide":3,"text":"›","textPreview":"›","textChars":1,"textLines":1,"bbox":[992,333,30,40]}
+{"kind":"shape","id":"sh/6lwvq10v","slide":3,"bbox":[1028,250,205,220]}
+{"kind":"textbox","id":"sh/rm5wz61g","slide":3,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1048,272,70,28]}
+{"kind":"textbox","id":"sh/1gryp03i","slide":3,"text":"Follow-up","textPreview":"Follow-up","textChars":9,"textLines":1,"bbox":[1048,326,165,32]}
+{"kind":"textbox","id":"sh/gfixwv2x","slide":3,"text":"Intervention and audit record are saved.","textPreview":"Intervention and audit record are saved.","textChars":40,"textLines":1,"bbox":[1048,382,165,65]}
+{"kind":"textbox","id":"sh/fe9gnqlc","slide":3,"text":"Stack: Astro + React + TypeScript | Tailwind CSS | Astro API routes | Gemini or OpenAI | Node standalone deployment","textPreview":"Stack: Astro + React + TypeScript | Tailwind CSS | Astro API routes | Gemini or OpenAI | Node standalone deployment","textChars":115,"textLines":1,"bbox":[58,548,1150,30]}
+{"kind":"notes","id":"nt/ymvjzq","slide":3,"text":"Source: Current SAHAY repository configuration and src/pages/api/chat.ts."}
+{"kind":"slide","id":"sl/hbognp","slide":4,"title":"SMART INDIA HACKATHON 2026","textShapes":11}
+{"kind":"textbox","id":"sh/o369cnq9","slide":4,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,26,700,48]}
+{"kind":"textbox","id":"sh/n2x83ipo","slide":4,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,24,140,58]}
+{"kind":"textbox","id":"sh/m1orax83","slide":4,"text":"FEASIBILITY AND VIABILITY","textPreview":"FEASIBILITY AND VIABILITY","textChars":25,"textLines":1,"bbox":[52,95,940,40]}
+{"kind":"shape","id":"sh/1gfq1s7i","slide":4,"bbox":[0,667,1280,53]}
+{"kind":"textbox","id":"sh/0f698nqx","slide":4,"text":"SAHAY | AI-powered victim well-being and distress monitoring","textPreview":"SAHAY | AI-powered victim well-being and distress monitoring","textChars":60,"textLines":1,"bbox":[52,680,830,22]}
+{"kind":"textbox","id":"sh/zed8zipc","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1175,678,56,24]}
+{"kind":"textbox","id":"sh/ed4r6d8r","slide":4,"text":"The prototype uses a lightweight web stack and can grow into a secure service layer.","textPreview":"The prototype uses a lightweight web stack and can grow into a secure service layer.","textChars":84,"textLines":1,"bbox":[58,150,1100,34]}
+{"kind":"shape","id":"sh/lczadc7m","slide":4,"bbox":[58,225,532,340]}
+{"kind":"shape","id":"sh/kbq9k761","slide":4,"bbox":[82,248,190,30]}
+{"kind":"textbox","id":"sh/y9g7658z","slide":4,"text":"CURRENT PROTOTYPE","textPreview":"CURRENT PROTOTYPE","textChars":17,"textLines":1,"bbox":[94,255,166,17]}
+{"kind":"textbox","id":"sh/zapozapk","slide":4,"text":"• Astro server with a standalone Node adapter\n• React interface for victim and counsellor views\n• Typed API route for AI risk assessment\n• Gemini primary provider and OpenAI fallback\n• Mock cases, alerts, analytics, and audit records","textPreview":"• Astro server with a standalone Node adapter | • React interface for victim and counsellor views | • Typed API route for AI risk assessm...","textChars":233,"textLines":5,"bbox":[82,308,460,200]}
+{"kind":"shape","id":"sh/0bip8vqp","slide":4,"bbox":[636,225,570,340]}
+{"kind":"shape","id":"sh/lcr6107a","slide":4,"bbox":[660,248,240,30]}
+{"kind":"textbox","id":"sh/qlg72l8n","slide":4,"text":"NEXT IMPLEMENTATION LAYER","textPreview":"NEXT IMPLEMENTATION LAYER","textChars":25,"textLines":1,"bbox":[672,255,216,17]}
+{"kind":"textbox","id":"sh/bmpovqp8","slide":4,"text":"• PostgreSQL or Supabase for persistent case records\n• Server-enforced role-based access\n• Consent versioning and audit logging\n• Fallback queue when an AI provider is unavailable\n• Aggregated district analytics without personal identifiers","textPreview":"• PostgreSQL or Supabase for persistent case records | • Server-enforced role-based access | • Consent versioning and audit logging | • F...","textChars":240,"textLines":5,"bbox":[660,308,500,200]}
+{"kind":"textbox","id":"sh/c7yp4vqt","slide":4,"text":"Deployment model: web application with secrets stored only in server-side environment variables.","textPreview":"Deployment model: web application with secrets stored only in server-side environment variables.","textChars":96,"textLines":1,"bbox":[58,592,1120,26]}
+{"kind":"notes","id":"nt/hbognp","slide":4,"text":"Source: Current SAHAY repository configuration, .env.example, and proposed implementation roadmap."}
+{"kind":"slide","id":"sl/7yrsgb","slide":5,"title":"SMART INDIA HACKATHON 2026","textShapes":13}
+{"kind":"textbox","id":"sh/8fato7ax","slide":5,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,26,700,48]}
+{"kind":"textbox","id":"sh/7e1cv29c","slide":5,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,24,140,58]}
+{"kind":"textbox","id":"sh/6dsbmxsr","slide":5,"text":"IMPACT AND BENEFITS","textPreview":"IMPACT AND BENEFITS","textChars":19,"textLines":1,"bbox":[52,95,940,40]}
+{"kind":"shape","id":"sh/lcjatcr6","slide":5,"bbox":[0,667,1280,53]}
+{"kind":"textbox","id":"sh/kbatk7al","slide":5,"text":"SAHAY | AI-powered victim well-being and distress monitoring","textPreview":"SAHAY | AI-powered victim well-being and distress monitoring","textChars":60,"textLines":1,"bbox":[52,680,830,22]}
+{"kind":"textbox","id":"sh/ja1sr290","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1175,678,56,24]}
+{"kind":"textbox","id":"sh/y98bixsf","slide":5,"text":"SAHAY supports human decision-making with an accountable, privacy-aware workflow.","textPreview":"SAHAY supports human decision-making with an accountable, privacy-aware workflow.","textChars":81,"textLines":1,"bbox":[58,150,1110,34]}
+{"kind":"shape","id":"sh/p83u5wra","slide":5,"bbox":[58,235,1135,78]}
+{"kind":"shape","id":"sh/47utwrap","slide":5,"bbox":[58,235,190,78]}
+{"kind":"textbox","id":"sh/6xo3i507","slide":5,"text":"Victim","textPreview":"Victim","textChars":6,"textLines":1,"bbox":[78,259,150,28]}
+{"kind":"textbox","id":"sh/ryxkbahs","slide":5,"text":"A voluntary check-in channel with clear consent and immediate support guidance.","textPreview":"A voluntary check-in channel with clear consent and immediate support guidance.","textChars":79,"textLines":1,"bbox":[280,255,850,38]}
+{"kind":"shape","id":"sh/sz6lkvid","slide":5,"bbox":[58,337,1135,78]}
+{"kind":"shape","id":"sh/t0f2d0zy","slide":5,"bbox":[58,337,190,78]}
+{"kind":"textbox","id":"sh/it43el0b","slide":5,"text":"Counsellor","textPreview":"Counsellor","textChars":10,"textLines":1,"bbox":[78,361,150,28]}
+{"kind":"textbox","id":"sh/judk7qhw","slide":5,"text":"A prioritised queue, case context, and a record of follow-up actions.","textPreview":"A prioritised queue, case context, and a record of follow-up actions.","textChars":69,"textLines":1,"bbox":[280,357,850,38]}
+{"kind":"shape","id":"sh/4vmlgvih","slide":5,"bbox":[58,439,1135,78]}
+{"kind":"shape","id":"sh/5wf290zm","slide":5,"bbox":[58,439,190,78]}
+{"kind":"textbox","id":"sh/2p83qp0f","slide":5,"text":"District team","textPreview":"District team","textChars":13,"textLines":1,"bbox":[78,463,150,28]}
+{"kind":"textbox","id":"sh/3qh4juh0","slide":5,"text":"Anonymised trends that help identify where support capacity is needed.","textPreview":"Anonymised trends that help identify where support capacity is needed.","textChars":70,"textLines":1,"bbox":[280,459,850,38]}
+{"kind":"textbox","id":"sh/za90bmxc","slide":5,"text":"Safety principle: the system supports escalation and follow-up. It does not provide a clinical diagnosis.","textPreview":"Safety principle: the system supports escalation and follow-up. It does not provide a clinical diagnosis.","textChars":105,"textLines":1,"bbox":[58,578,1120,30]}
+{"kind":"notes","id":"nt/7yrsgb","slide":5,"text":"Source: SAHAY project scope and safety constraints in src/pages/api/chat.ts."}
+{"kind":"slide","id":"sl/u3rqz7","slide":6,"title":"SMART INDIA HACKATHON 2026","textShapes":20}
+{"kind":"textbox","id":"sh/4bepsnep","slide":6,"text":"SMART INDIA HACKATHON 2026","textPreview":"SMART INDIA HACKATHON 2026","textChars":26,"textLines":1,"bbox":[48,26,700,48]}
+{"kind":"textbox","id":"sh/ja58jid4","slide":6,"text":"SIH\n2026","textPreview":"SIH | 2026","textChars":8,"textLines":2,"bbox":[1090,24,140,58]}
+{"kind":"textbox","id":"sh/ipc7qdwj","slide":6,"text":"RESEARCH AND REFERENCES","textPreview":"RESEARCH AND REFERENCES","textChars":23,"textLines":1,"bbox":[52,95,940,40]}
+{"kind":"shape","id":"sh/ho3qh8vy","slide":6,"bbox":[0,667,1280,53]}
+{"kind":"textbox","id":"sh/wnupo3ed","slide":6,"text":"SAHAY | AI-powered victim well-being and distress monitoring","textPreview":"SAHAY | AI-powered victim well-being and distress monitoring","textChars":60,"textLines":1,"bbox":[52,680,830,22]}
+{"kind":"textbox","id":"sh/vml8fyds","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1175,678,56,24]}
+{"kind":"textbox","id":"sh/ulc7mdw7","slide":6,"text":"Design decisions are grounded in trauma-informed support, data minimisation, and accountable case handling.","textPreview":"Design decisions are grounded in trauma-informed support, data minimisation, and accountable case handling.","textChars":107,"textLines":1,"bbox":[58,150,1110,38]}
+{"kind":"shape","id":"sh/1k7qtcv2","slide":6,"bbox":[58,235,535,112]}
+{"kind":"shape","id":"sh/gjy907ex","slide":6,"bbox":[76,255,56,30]}
+{"kind":"textbox","id":"sh/e9kvadwb","slide":6,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[88,262,32,17]}
+{"kind":"textbox","id":"sh/zadw3ydw","slide":6,"text":"Trauma-informed support","textPreview":"Trauma-informed support","textChars":23,"textLines":1,"bbox":[154,255,400,27]}
+{"kind":"textbox","id":"sh/0vmxc3eh","slide":6,"text":"Use calm, non-judgmental language and clear escalation guidance.","textPreview":"Use calm, non-judgmental language and clear escalation guidance.","textChars":64,"textLines":1,"bbox":[154,293,400,36]}
+{"kind":"shape","id":"sh/1wve58v2","slide":6,"bbox":[633,235,535,112]}
+{"kind":"shape","id":"sh/q5kv6twf","slide":6,"bbox":[651,255,56,30]}
+{"kind":"textbox","id":"sh/r6twzyd0","slide":6,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[663,262,32,17]}
+{"kind":"textbox","id":"sh/c72d83el","slide":6,"text":"Data minimisation","textPreview":"Data minimisation","textChars":17,"textLines":1,"bbox":[729,255,400,27]}
+{"kind":"textbox","id":"sh/d8be18v6","slide":6,"text":"Request only the information necessary for the chosen support pathway.","textPreview":"Request only the information necessary for the chosen support pathway.","textChars":70,"textLines":1,"bbox":[729,293,400,36]}
+{"kind":"shape","id":"sh/a1ofixwj","slide":6,"bbox":[58,380,535,112]}
+{"kind":"shape","id":"sh/b2xwbid4","slide":6,"bbox":[76,400,56,30]}
+{"kind":"textbox","id":"sh/76ps3atg","slide":6,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[88,407,32,17]}
+{"kind":"textbox","id":"sh/65gbupcv","slide":6,"text":"Role-based access","textPreview":"Role-based access","textChars":17,"textLines":1,"bbox":[154,400,400,27]}
+{"kind":"textbox","id":"sh/t87u5kbm","slide":6,"text":"Restrict counsellor and administrator views on the server side.","textPreview":"Restrict counsellor and administrator views on the server side.","textChars":63,"textLines":1,"bbox":[154,438,400,36]}
+{"kind":"shape","id":"sh/s7ytwfu1","slide":6,"bbox":[633,380,535,112]}
+{"kind":"shape","id":"sh/fapc7uts","slide":6,"bbox":[651,400,56,30]}
+{"kind":"textbox","id":"sh/u9gbypc7","slide":6,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[663,407,32,17]}
+{"kind":"textbox","id":"sh/hcru94by","slide":6,"text":"Auditability","textPreview":"Auditability","textChars":12,"textLines":1,"bbox":[729,400,400,27]}
+{"kind":"textbox","id":"sh/gbit0zud","slide":6,"text":"Record important case access and action events for accountability.","textPreview":"Record important case access and action events for accountability.","textChars":66,"textLines":1,"bbox":[729,438,400,36]}
+{"kind":"textbox","id":"sh/3e9cbeto","slide":6,"text":"Implementation references: Astro documentation, React documentation, Tailwind CSS documentation, Gemini API documentation, OpenAI API documentation.","textPreview":"Implementation references: Astro documentation, React documentation, Tailwind CSS documentation, Gemini API documentation, OpenAI API doc...","textChars":148,"textLines":1,"bbox":[58,548,1120,42]}
+{"kind":"textbox","id":"sh/2d0b29c3","slide":6,"text":"Before submission: add the official SIH problem statement, team details, and validated deployment partner information.","textPreview":"Before submission: add the official SIH problem statement, team details, and validated deployment partner information.","textChars":118,"textLines":1,"bbox":[58,608,1120,24]}
+{"kind":"notes","id":"nt/u3rqz7","slide":6,"text":"Sources: SAHAY current implementation; Astro docs; React docs; Tailwind CSS docs; Google Gemini API docs; OpenAI API docs. Verify official SIH requirements before submission."}

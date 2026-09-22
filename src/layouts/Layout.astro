@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { 
+  title = "SAHAY — AI-Powered Victim Well-being & Distress Monitoring System", 
+  description = "Continuous, explainable psychological well-being and distress monitoring system for victims throughout investigation, trial, and rehabilitation. MoSJE SIH 2026."
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="h-full bg-[#fafafa] text-[#171717] antialiased">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	</head>
+	<body class="min-h-full flex flex-col font-sans bg-[#fafafa] text-[#171717]">
+		<slot />
+	</body>
+</html>

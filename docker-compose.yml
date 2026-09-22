@@ -1,0 +1,15 @@
+services:
+  sahay:
+    build: .
+    container_name: sahay-app
+    restart: unless-stopped
+    ports:
+      - "4321:4321"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4321
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      # Persistent storage: SQLite database file is kept safely on the host machine
+      - ./data:/app/data
