@@ -1,0 +1,13 @@
+# Keep local installs, builds, secrets and the SQLite database out of the image
+node_modules
+dist
+.astro
+/data
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+.git
+output
+.ppt_build

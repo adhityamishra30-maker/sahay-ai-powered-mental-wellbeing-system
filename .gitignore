@@ -24,7 +24,7 @@ pnpm-debug.log*
 .idea/
 
 # SQLite database & sensitive storage (Developer-only)
-data/
+/data/
 *.db
 *.db-journal
 *.db-wal
