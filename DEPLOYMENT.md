@@ -15,25 +15,25 @@ This guide explains how to deploy the **SAHAY** system online, ensure that the *
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        SAHAY SSR Server (Node 24)                      │
 │                                                                        │
-│  [Public Web Endpoints]               [Sanitization Gateway]           │
-│   • 1-Click Anonymous Guest             • Strips PII (Names, Phones)   │
-│   • Optional Registered Victim Login    • Enforces Academic Citations  │
-│   • Mandatory Staff & Authority Login        │                         │
-│                                              ▼                         │
-│                                    [Gemini AI Triage API]              │
-│                                    (Receives ONLY sanitized distress   │
-│                                     sentiment & trauma indicators)     │
+│  [Public]                              [Staff only: session cookie]    │
+│   • Guest check-in (POST /api/checkins)  • GET  /api/alerts            │
+│   • Optional alias account               • GET/POST /api/logs          │
+│   • AI triage (POST /api/chat)                                         │
+│         │                                                              │
+│         ▼  best-effort redaction of phone numbers & emails             │
+│  [Gemini API]  receives message, feeling, screening answers only       │
+│                (never name, age, district, contact or location)        │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Direct File I/O (NOT over HTTP)
+                                    │ Direct file I/O
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│                SECURE LOCAL DATABASE: ./data/sahay.db                  │
+│                 DATABASE: $DATA_DIR/sahay.db (SQLite, WAL)             │
 │                                                                        │
-│  • Storage: Native Node 24 SQLite (WAL mode, fast & ACID compliant)    │
-│  • Passwords: Salted SHA-512 PBKDF2 (100,000 iterations)               │
-│  • Accessibility: STRICTLY RESTRICTED to local server filesystem.      │
-│    Zero public URLs or external ports expose this database file.       │
-│  • Developer Access: Exclusively via SSH / CLI: `npm run db:admin`    │
+│  • Messages, names, contacts, locations: AES-256-GCM (DATA_ENCRYPTION_KEY) │
+│  • Passwords: salted PBKDF2-SHA512 (100,000 iterations)                │
+│  • Sessions: only SHA-256 of the cookie token is stored                │
+│  • Retention: check-ins/alerts 180 days, audit log 365 days            │
+│  • Developer access: server shell only (`npm run db:admin`)            │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -66,17 +66,29 @@ npx ngrok http 4321
 Because SAHAY uses SQLite (`./data/sahay.db`), you should host it on a provider that supports **Persistent Disks / Volumes** so data is never lost when the server restarts.
 
 ### Option A: Railway.app (Easiest & Most Reliable)
+
+> Railway does **not** accept a `VOLUME` instruction in the Dockerfile (build fails with
+> "docker VOLUME ... is not supported, use Railway Volumes"). The Dockerfile no longer
+> declares one; persistence comes from a Railway Volume instead.
+
 1. Push this project to your GitHub repository.
 2. Go to [Railway.app](https://railway.app/) and sign in with GitHub.
 3. Click **New Project** → **Deploy from GitHub repo** → select this repository.
-4. Add a **Persistent Volume**:
-   - In your Railway service settings, click **Volumes** → **Add Volume**.
-   - Set **Mount Path** to: `/app/data`
-5. Set Environment Variables (in the **Variables** tab):
-   - `PORT`: `4321`
-   - `HOST`: `0.0.0.0`
-   - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
-6. Railway will automatically build the Dockerfile and launch your app with a free `*.up.railway.app` HTTPS domain.
+4. Attach a **Volume** so `sahay.db` survives redeploys:
+   - Right-click the service (or open the Command Palette) → **Attach Volume**.
+   - **Mount path**: `/app/data`
+   - Railway also exposes `RAILWAY_VOLUME_MOUNT_PATH`, which the app reads automatically.
+5. Set environment variables (service → **Variables**):
+   - `DATA_ENCRYPTION_KEY`: **required**. Generate once with
+     `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and never change it.
+   - `SEED_PASSWORD_RIYA`, `SEED_PASSWORD_DIVYA`, `SEED_PASSWORD_AYUSH`, `SEED_PASSWORD_PRASHANT`,
+     `SEED_PASSWORD_DISTRICT_OFFICER`, `SEED_PASSWORD_STATE_OFFICER`, `SEED_PASSWORD_NATIONAL_OFFICER`:
+     staff passwords. If you skip them, random ones are printed once in the deploy logs.
+   - `GEMINI_API_KEY`: your Google Gemini key (use a paid tier for real users).
+   - `RAILWAY_RUN_UID`: `0` — only if the logs show a permission error writing to `/app/data`
+     (Railway volumes are mounted as root; the image runs as the `node` user).
+   - Do **not** set `PORT`; Railway injects it.
+6. Railway builds the Dockerfile and serves the app on a `*.up.railway.app` HTTPS domain.
 
 ### Option B: Render.com
 1. Go to [Render.com](https://render.com/) and click **New +** → **Web Service**.
@@ -88,6 +100,8 @@ Because SAHAY uses SQLite (`./data/sahay.db`), you should host it on a provider 
    - **Size**: 1 GB
 5. In **Environment Variables**:
    - `GEMINI_API_KEY`: *(Your key)*
+   - `DATA_ENCRYPTION_KEY`: *(64-hex-character key, see Railway step 5)*
+   - `SEED_PASSWORD_<USERNAME>` for each staff account
 6. Click **Create Web Service**.
 
 ### Option C: Fly.io
@@ -127,6 +141,9 @@ cd /opt/sahay
 Create a `.env` file:
 ```bash
 GEMINI_API_KEY=your_gemini_api_key_here
+DATA_ENCRYPTION_KEY=<64 hex characters>
+SEED_PASSWORD_RIYA=<strong password>
+# ...one SEED_PASSWORD_<USERNAME> per staff account (see .env.example)
 PORT=4321
 HOST=0.0.0.0
 ```
@@ -150,7 +167,9 @@ Reload Caddy: `sudo systemctl reload caddy`. Caddy will automatically generate a
 
 ## 4. How the Developer Inspects the Database
 
-Because the database is **NOT accessible via any web URL or client query**, only you (the developer with server/terminal access) can inspect and manage it.
+The database file is not served over HTTP. Staff see only what the authenticated APIs return; the full database is available only from a server shell.
+
+> `db:admin` prints the raw table contents. Sensitive columns appear as `enc:v1:...` ciphertext because they are encrypted at rest.
 
 Run the built-in Admin CLI utility:
 
@@ -177,16 +196,15 @@ scp user@your-server-ip:/opt/sahay/data/sahay.db ./local-backup.db
 
 ---
 
-## 5. Summary of Built-in Credentials
+## 5. Built-in Accounts
 
-| Role | Username | Password | Specialization / Scope |
-| :--- | :--- | :--- | :--- |
-| **Counsellor 1** | `riya` | `Riya@2026` | Senior Trauma Specialist (Crisis & high-risk triage) |
-| **Counsellor 2** | `divya` | `Divya@2026` | Clinical Well-being Counsellor (Emotional recovery) |
-| **Counsellor 3** | `ayush` | `Ayush@2026` | Case Manager (Rehabilitation & institutional follow-up) |
-| **Counsellor 4** | `prashant` | `Prashant@2026` | District Response Counsellor (Field & immediate safety) |
-| **District Authority** | `district_officer` | `District@2026` | South Delhi District Authority |
-| **State Authority** | `state_officer` | `State@2026` | Delhi State Tier Authority |
-| **National Authority** | `national_officer` | `National@2026` | National MoSJE Delhi Headquarters |
-| **Victim Access (Guest)** | *None* | *None* | 1-Click Instant Anonymous Session |
-| **Victim Access (Registered)**| User-defined | User-defined | Created via Sign-up form |
+| Role | Username | Password source |
+| :--- | :--- | :--- |
+| Counsellor | `riya`, `divya`, `ayush`, `prashant` | `SEED_PASSWORD_<USERNAME>` |
+| District / State / National authority | `district_officer`, `state_officer`, `national_officer` | `SEED_PASSWORD_<USERNAME>` |
+| Victim (guest) | none | none |
+| Victim (registered) | chosen alias | chosen by the user (min. 8 characters) |
+
+- **Production:** if a `SEED_PASSWORD_*` variable is missing, a random password is generated and printed once in the server log. Set or change the variable and restart to rotate a password (existing sessions for that account are signed out).
+- **Local development only** (`npm run dev`): unset variables fall back to the demo passwords defined in `src/lib/db.ts`. Never deploy with `NODE_ENV` other than production.
+- The old shared `counsellor / SAHAY@2026` account has been removed and is deleted from existing databases on startup.

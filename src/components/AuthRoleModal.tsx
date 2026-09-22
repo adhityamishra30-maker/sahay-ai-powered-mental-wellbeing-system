@@ -95,8 +95,6 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
   const [victimMode, setVictimMode] = useState<'guest' | 'login' | 'signup'>('guest');
   const [victimUsername, setVictimUsername] = useState('');
   const [victimPassword, setVictimPassword] = useState('');
-  const [victimFullName, setVictimFullName] = useState('');
-  const [victimContact, setVictimContact] = useState('');
   const [victimAuthLoading, setVictimAuthLoading] = useState(false);
   const [victimAuthError, setVictimAuthError] = useState('');
   const [victimAuthSuccess, setVictimAuthSuccess] = useState('');
@@ -128,6 +126,8 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
 
   // 1-Click Guest Victim Access (Requires nothing)
   const handleGuestVictimAccess = () => {
+    // End any staff or registered session left on this device before continuing as a guest.
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
     setActiveRole('Victim / Complainant');
     onRoleSelect('Victim / Complainant', 'landing', {
       id: `guest-${Date.now()}`,
@@ -142,7 +142,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
   const handleVictimSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!victimUsername.trim() || !victimPassword.trim()) {
-      setVictimAuthError('Please enter both username/email and password.');
+      setVictimAuthError('Please enter both your alias and password.');
       return;
     }
     setVictimAuthLoading(true);
@@ -154,7 +154,8 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: victimUsername.trim(),
-          password: victimPassword
+          password: victimPassword,
+          portal: 'victim'
         })
       });
       const data = await res.json();
@@ -177,7 +178,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
   const handleVictimSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!victimUsername.trim() || !victimPassword.trim()) {
-      setVictimAuthError('Please provide an alias/username and a secure password.');
+      setVictimAuthError('Please provide an alias and a password of at least 8 characters.');
       return;
     }
     setVictimAuthLoading(true);
@@ -188,11 +189,8 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: victimUsername.trim(),
-          password: victimPassword,
-          fullName: victimFullName.trim() || undefined,
-          contactInfo: victimContact.trim() || undefined,
-          accountType: 'victim'
+          alias: victimUsername.trim(),
+          password: victimPassword
         })
       });
       const data = await res.json();
@@ -200,7 +198,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         throw new Error(data.error || 'Registration failed');
       }
 
-      setVictimAuthSuccess('Account registered successfully! You are now securely logged in.');
+      setVictimAuthSuccess('Account created. You are now signed in.');
       setTimeout(() => {
         const roleDisplay = `Victim (${data.user.name || data.user.username})`;
         setActiveRole(roleDisplay);
@@ -230,7 +228,8 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: counsellorUsername.trim(),
-          password: counsellorPassword
+          password: counsellorPassword,
+          portal: 'counsellor'
         })
       });
       const data = await res.json();
@@ -266,7 +265,8 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: authorityUsername.trim(),
-          password: authorityPassword
+          password: authorityPassword,
+          portal: 'authority'
         })
       });
       const data = await res.json();
@@ -314,11 +314,11 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
               <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-bold text-[#171717] tracking-tight">Access Control & Sign In</h2>
                 <span className="bg-blue-50 text-[#0070f3] text-[10px] font-mono font-medium px-2 py-0.5 rounded border border-blue-200 uppercase">
-                  SHA-512 PBKDF2 Encrypted
+                  Passwords hashed (PBKDF2)
                 </span>
               </div>
               <p className="text-xs text-[#8f8f8f]">
-                Victims have 1-click anonymous access; Counsellors & Authorities require mandatory verification.
+                Victims can continue without an account; counsellors and authorities must sign in.
               </p>
             </div>
           </div>
@@ -385,9 +385,9 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                     <span className="text-xs font-bold font-mono uppercase text-[#0070f3]">Option 1 · Zero Credentials</span>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-mono px-2 py-0.2 rounded">Instant</span>
                   </div>
-                  <h3 className="text-sm font-bold text-[#171717]">1-Click Anonymous Guest Access</h3>
+                  <h3 className="text-sm font-bold text-[#171717]">Continue Without an Account</h3>
                   <p className="text-xs text-[#4d4d4d] leading-relaxed">
-                    No sign up, no email, phone number, or password required. Complies with DPDP Act 2023 for immediate victim distress check-ins.
+                    No sign-up or password needed. The check-in will ask for some optional details (a name or alias, district, a trusted contact). You can skip any of them, and you will see who can read them before you share.
                   </p>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                 onClick={handleGuestVictimAccess}
                 className="w-full py-2.5 px-4 rounded-xl bg-[#171717] hover:bg-black text-white text-xs font-bold transition shadow-xs flex items-center justify-center space-x-2 active:scale-98"
               >
-                <span>Continue as Guest Survivor (1-Click)</span>
+                <span>Continue as Guest</span>
                 <ArrowRight className="w-3.5 h-3.5 text-[#0070f3]" />
               </button>
             </div>
@@ -434,12 +434,12 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
               {victimMode === 'login' ? (
                 <form onSubmit={handleVictimSignIn} className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Username or Email</label>
+                    <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Alias</label>
                     <input
                       type="text"
                       value={victimUsername}
                       onChange={(e) => setVictimUsername(e.target.value)}
-                      placeholder="e.g. rahul_k or confidential alias"
+                      placeholder="Your private alias"
                       className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                     />
                   </div>
@@ -450,6 +450,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                       value={victimPassword}
                       onChange={(e) => setVictimPassword(e.target.value)}
                       placeholder="Enter your password"
+                      autoComplete="current-password"
                       className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                     />
                   </div>
@@ -474,12 +475,13 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                 <form onSubmit={handleVictimSignUp} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Alias or Username *</label>
+                      <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Private alias *</label>
                       <input
                         type="text"
                         value={victimUsername}
                         onChange={(e) => setVictimUsername(e.target.value)}
-                        placeholder="e.g. rahul_k"
+                        placeholder="e.g. quiet_river"
+                        autoComplete="username"
                         required
                         className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                       />
@@ -490,35 +492,17 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                         type="password"
                         value={victimPassword}
                         onChange={(e) => setVictimPassword(e.target.value)}
-                        placeholder="Create a password"
+                        placeholder="At least 8 characters"
+                        autoComplete="new-password"
                         required
                         className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Display Name (Optional)</label>
-                      <input
-                        type="text"
-                        value={victimFullName}
-                        onChange={(e) => setVictimFullName(e.target.value)}
-                        placeholder="For example: Rahul"
-                        className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-[#4d4d4d] mb-1">Contact Email / Phone (Optional)</label>
-                      <input
-                        type="text"
-                        value={victimContact}
-                        onChange={(e) => setVictimContact(e.target.value)}
-                        placeholder="Confidential"
-                        className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
-                      />
-                    </div>
-                  </div>
+                  <p className="text-[11px] text-[#4d4d4d] leading-relaxed">
+                    Use an alias, not your real name. We store only the alias and a hashed password (no email or phone). You can delete the account and all its check-ins from the Privacy page at any time.
+                  </p>
 
                   {victimAuthError && (
                     <div className="flex items-center space-x-1.5 text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
@@ -540,7 +524,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                     className="w-full py-2.5 px-4 rounded-xl bg-[#0070f3] hover:bg-[#005dcc] text-white text-xs font-bold transition shadow-xs flex items-center justify-center space-x-1.5 disabled:opacity-60"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    <span>{victimAuthLoading ? 'Creating Account...' : 'Register Secure Victim Account'}</span>
+                    <span>{victimAuthLoading ? 'Creating Account...' : 'Create Alias Account'}</span>
                   </button>
                 </form>
               )}
@@ -612,6 +596,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                     value={counsellorPassword}
                     onChange={(e) => setCounsellorPassword(e.target.value)}
                     placeholder="Riya@2026"
+                    autoComplete="current-password"
                     required
                     className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                   />
@@ -703,6 +688,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
                     value={authorityPassword}
                     onChange={(e) => setAuthorityPassword(e.target.value)}
                     placeholder="District@2026"
+                    autoComplete="current-password"
                     required
                     className="w-full rounded-xl border border-[#ebebeb] bg-white px-3 py-2 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
                   />
@@ -732,7 +718,7 @@ export const AuthRoleModal: React.FC<AuthRoleModalProps> = ({
         <div className="mt-5 pt-3 border-t border-[#ebebeb] flex items-center justify-between text-xs text-[#8f8f8f]">
           <span className="flex items-center">
             <Lock className="w-3.5 h-3.5 mr-1 text-[#0070f3]" />
-            DPDP Act 2023 Compliant · Zero PII Forwarding to Gemini
+            Name, contact and location are never sent to the AI provider
           </span>
           <button
             onClick={onClose}

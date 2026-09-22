@@ -87,7 +87,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onNavigate, openRoleMo
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="font-semibold">Victim / Complainant Active</span>
                 <span className="text-slate-400">•</span>
-                <span>DPDP Act 2023 Protected</span>
+                <span>Optional details, delete anytime</span>
               </div>
             )}
           </div>
@@ -253,7 +253,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onNavigate, openRoleMo
               </div>
               <h3 className="font-semibold text-sm text-[#171717]">Consent-Based Location</h3>
               <p className="text-xs text-[#8f8f8f] leading-relaxed">
-                The victim can share current location only after granting browser permission for urgent follow-up.
+                Exact location is shared only if the victim presses the button and grants browser permission. It is then visible to the assigned counsellor and escalation authority.
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-[#f2f2f2] text-[10px] font-mono text-slate-500">

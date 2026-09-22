@@ -59,7 +59,8 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
     let isMounted = true;
     const fetchAlerts = async () => {
       try {
-        const res = await fetch(`/api/alerts?counsellor=${encodeURIComponent(counsellorName)}`);
+        // The server scopes alerts to the signed-in counsellor from the session cookie.
+        const res = await fetch('/api/alerts');
         if (res.ok) {
           const data = await res.json();
           if (isMounted && Array.isArray(data.alerts)) {
@@ -226,7 +227,7 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
               </span>
             </div>
             <p className="text-xs text-[#8f8f8f]">
-              Direct alerts routed by the automated triage algorithm and stored securely in SQLite database.
+              Alerts assigned to you by automated triage. Message and trusted contact are shown only to the assigned counsellor.
             </p>
           </div>
           <div className="flex items-center space-x-2 text-xs font-mono">
@@ -296,6 +297,20 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
                         ))}
                       </div>
                     )}
+
+                    {alt.checkinMessage && (
+                      <p className="text-xs text-[#4d4d4d] leading-relaxed">
+                        <span className="font-mono text-[10px] uppercase text-[#8f8f8f] mr-1">Message:</span>
+                        {alt.checkinMessage}
+                      </p>
+                    )}
+
+                    {(alt.trustedContactName || alt.trustedContactPhone) && (
+                      <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 inline-block">
+                        <span className="font-mono text-[10px] uppercase mr-1">Restricted · trusted contact:</span>
+                        {alt.trustedContactName || 'Unnamed'}{alt.trustedContactPhone ? ` · ${alt.trustedContactPhone}` : ''}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2 shrink-0">
@@ -319,7 +334,7 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
         <div className="p-5 border-b border-[#ebebeb] flex items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-[#171717]">Latest Victim Check-ins</h2>
-            <p className="text-xs text-[#8f8f8f]">Every completed AI check-in is saved here for counsellor review during this session.</p>
+            <p className="text-xs text-[#8f8f8f]">Check-ins completed in this browser session (demo view). Alerts above come from the server.</p>
           </div>
           <span className="text-xs font-mono text-[#0070f3] bg-blue-50 px-2.5 py-1 rounded border border-blue-100">{checkins.length} Saved</span>
         </div>
@@ -350,7 +365,7 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
       <div className="bg-amber-50/60 border border-amber-200 rounded-2xl shadow-xs overflow-hidden">
         <div className="p-5 border-b border-amber-200">
           <h2 className="text-base font-bold text-[#171717]">Restricted Emergency Contacts</h2>
-          <p className="text-xs text-amber-900 mt-1">Visible only to authenticated counsellors and higher authorities. Use only for approved safeguarding follow-up.</p>
+          <p className="text-xs text-amber-900 mt-1">Contacts entered in this browser session (demo view). Use only for approved safeguarding follow-up; never share outside the assigned care team.</p>
         </div>
         {sensitiveRecords.length === 0 ? (
           <p className="p-5 text-xs text-[#8f8f8f]">No trusted-contact details have been submitted.</p>
@@ -502,7 +517,7 @@ export const CounsellorDashboard: React.FC<CounsellorDashboardProps> = ({
           <div>
             <h3 className="text-base font-bold text-[#171717]">Priority Cases Management Queue</h3>
             <p className="text-xs text-[#8f8f8f]">
-              Pseudonymized complainant records sorted by dynamic distress score.
+              Complainant records sorted by distress score. Aliases are chosen by the victim and may be real names.
             </p>
           </div>
 

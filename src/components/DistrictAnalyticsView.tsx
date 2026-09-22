@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { DISTRICT_ANALYTICS_DATA } from '../data/mockData';
-import type { SensitiveSupportRecord } from '../data/mockData';
 import { BarChart3, ShieldCheck, MapPin, Building, Globe, Lock, Filter } from 'lucide-react';
 
-interface DistrictAnalyticsViewProps {
-  sensitiveRecords: SensitiveSupportRecord[];
-}
-
-export const DistrictAnalyticsView: React.FC<DistrictAnalyticsViewProps> = ({ sensitiveRecords }) => {
+export const DistrictAnalyticsView: React.FC = () => {
   const [activeTier, setActiveTier] = useState<'District' | 'State' | 'National'>('District');
   const [selectedRegion, setSelectedRegion] = useState<string>('All');
 
@@ -68,20 +63,12 @@ export const DistrictAnalyticsView: React.FC<DistrictAnalyticsViewProps> = ({ se
         <div className="flex items-center space-x-2">
           <Lock className="w-4 h-4 text-[#0070f3] shrink-0" />
           <span>
-            <strong>Data Minimisation & Privacy Protocol:</strong> Aggregated views strictly enforce zero exposure of personally identifiable victim information (PII).
+            <strong>Aggregated view:</strong> This page shows counts by region only. Names, trusted contacts and exact locations are not displayed here; trusted contacts are visible only to the assigned counsellor.
           </span>
         </div>
         <span className="font-mono text-[10px] bg-blue-100 text-[#0070f3] px-2 py-0.5 rounded uppercase font-semibold">
-          DPDP Act 2023 Compliant
+          Counts only
         </span>
-      </div>
-
-      <div className="bg-white border border-[#ebebeb] rounded-2xl p-5 shadow-xs">
-        <div className="flex items-center justify-between gap-3">
-          <div><h2 className="text-base font-bold text-[#171717]">Restricted Safeguarding Contacts</h2><p className="text-xs text-[#8f8f8f] mt-1">Higher-authority access for coordinated safeguarding only.</p></div>
-          <span className="text-xs font-mono text-[#0070f3]">{sensitiveRecords.length} Records</span>
-        </div>
-        {sensitiveRecords.length > 0 && <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="text-[10px] uppercase font-mono text-[#8f8f8f] border-b border-[#ebebeb]"><tr><th className="p-2">Name / age</th><th className="p-2">Region</th><th className="p-2">Trusted contact</th><th className="p-2">Phone</th></tr></thead><tbody className="divide-y divide-[#ebebeb]">{sensitiveRecords.map(record => <tr key={record.id}><td className="p-2 font-semibold text-[#171717]">{record.nameAge}</td><td className="p-2 text-[#4d4d4d]">{record.district}, {record.state} ({record.areaType})</td><td className="p-2 text-[#4d4d4d]">{record.trustedContact}</td><td className="p-2 font-mono text-[#171717]">{record.trustedPhone}</td></tr>)}</tbody></table></div>}
       </div>
 
       {/* TOP KPI CARDS */}

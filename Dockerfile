@@ -43,13 +43,16 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/scripts ./scripts
 
-# Create persistent data directory for sahay.db SQLite database
+# Create data directory for sahay.db SQLite database.
+# Persistence comes from the host platform, not a Dockerfile VOLUME:
+#   - Railway: attach a Railway Volume mounted at /app/data (Railway rejects VOLUME).
+#   - Docker Compose: ./data:/app/data bind mount in docker-compose.yml.
+# DATA_DIR overrides the location if the volume is mounted elsewhere.
 RUN mkdir -p /app/data && chown -R node:node /app/data
 
-# Declare persistent volume so SQLite database survives container upgrades
-VOLUME ["/app/data"]
-
-# Run as non-privileged node user for security
+# Run as non-privileged node user for security.
+# Railway mounts volumes as root; set RAILWAY_RUN_UID=0 on the service if the
+# app cannot write to /app/data.
 USER node
 
 EXPOSE 4321

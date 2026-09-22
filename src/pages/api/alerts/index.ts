@@ -1,28 +1,24 @@
 import type { APIRoute } from 'astro';
 import { getAlertsForCounsellor, getAllAlerts } from '../../../lib/db';
+import { requireSession, STAFF_ACCOUNT_TYPES } from '../../../lib/session';
+import { jsonResponse } from '../../../lib/security';
 
-export const GET: APIRoute = async ({ url }) => {
+/**
+ * Staff-only. Counsellors receive only the alerts assigned to them (scoped by
+ * their session, not a query parameter); authorities receive all escalations.
+ */
+export const GET: APIRoute = async ({ cookies }) => {
+  const auth = requireSession(cookies, STAFF_ACCOUNT_TYPES);
+  if (auth.response) return auth.response;
+
   try {
-    const counsellor = url.searchParams.get('counsellor');
-    let alerts: any[];
+    const alerts = auth.session.accountType === 'counsellor'
+      ? getAlertsForCounsellor(auth.session.displayName)
+      : getAllAlerts();
 
-    if (counsellor && counsellor.trim()) {
-      alerts = getAlertsForCounsellor(counsellor.trim());
-    } else {
-      alerts = getAllAlerts();
-    }
-
-    return new Response(JSON.stringify({
-      success: true,
-      alerts
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: 'Alerts retrieval error: ' + (err?.message || 'Unknown') }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse({ success: true, alerts });
+  } catch (err) {
+    console.error('[SAHAY] Alerts retrieval error:', err);
+    return jsonResponse({ error: 'Alerts are temporarily unavailable.' }, 500);
   }
 };

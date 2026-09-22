@@ -11,7 +11,10 @@ import {
   ShieldCheck,
   MapPin,
   ArrowLeft,
-  CheckCircle2
+  CheckCircle2,
+  Trash2,
+  LogOut,
+  Info
 } from 'lucide-react';
 import type { AlertItem, AuditLogItem } from '../data/mockData';
 
@@ -53,9 +56,10 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
   const [isEmergency, setIsEmergency] = useState(false);
   const [isAtrocityCase, setIsAtrocityCase] = useState<boolean | null>(null);
-  const [neuroStress, setNeuroStress] = useState<string>('Moderate');
-  const [trustWithdrawal, setTrustWithdrawal] = useState<string>('Moderate');
-  const [existentialTrauma, setExistentialTrauma] = useState<string>('Moderate');
+  // Empty string means "not answered"; nothing is sent for unanswered screening questions.
+  const [neuroStress, setNeuroStress] = useState<string>('');
+  const [trustWithdrawal, setTrustWithdrawal] = useState<string>('');
+  const [existentialTrauma, setExistentialTrauma] = useState<string>('');
   const [assignedSpecialist, setAssignedSpecialist] = useState<{
     name: string;
     title: string;
@@ -71,6 +75,8 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [voiceError, setVoiceError] = useState<string>('');
   const [voiceStressScore, setVoiceStressScore] = useState<number | null>(null);
+  const [savedCheckin, setSavedCheckin] = useState<{ checkinId: string; deleteToken: string } | null>(null);
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'deleted' | 'error'>('idle');
   
   // Step-by-step loading state
   const [loadingStep, setLoadingStep] = useState<number>(0); // 0 = idle, 1..4 = steps
@@ -81,6 +87,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
     riskScore: number;
     riskLevel: string;
     rationale: string;
+    source?: string;
   } | null>(null);
 
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'SAHAY' | 'Victim'; text: string; time: string }>>([
@@ -101,10 +108,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
   ];
 
   const loadingStepMessages = [
-    "Analyzing check-in message...",
-    "Processing NLP sentiment signals...",
-    "Evaluating engagement latency trend...",
-    "Computing SHAP explainable risk indicators..."
+    "Sending your check-in and estimating support priority..."
   ];
 
   useEffect(() => {
@@ -215,7 +219,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
       setOnboardingStep(2);
       setChatMessages(prev => [...prev, {
         sender: 'SAHAY',
-        text: 'Thank you for letting me know. What name or alias would you like me to call you, and what is your age?',
+        text: 'Thank you for letting me know. What name or alias would you like me to call you, and what is your age? You can skip this.',
         time: 'Just now'
       }]);
     }
@@ -225,29 +229,73 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
     setOnboardingStep(2);
     setChatMessages(prev => [...prev, {
       sender: 'SAHAY',
-      text: 'Trauma screening dimensions recorded under strict DPDP Act privacy protections. What name or alias would you like me to call you, and what is your age?',
+      text: 'Thank you. Your screening answers will be shared with your assigned counsellor. What name or alias would you like me to call you, and what is your age? You can skip this.',
       time: 'Just now'
     }]);
   };
 
-  const handleNameAgeSubmit = () => {
-    if (!nameAge.trim()) return;
+  // Name, district and trusted contact are all optional; "skip" clears anything typed.
+  const handleNameAgeSubmit = (skip = false) => {
+    if (skip) setNameAge('');
+    else if (!nameAge.trim()) return;
     setOnboardingStep(3);
-    setChatMessages(prev => [...prev, { sender: 'SAHAY', text: 'Thank you. Which district and state are you in, and is your area urban or rural?', time: 'Just now' }]);
+    setChatMessages(prev => [...prev, { sender: 'SAHAY', text: 'Which district and state are you in, and is your area urban or rural? You can skip this.', time: 'Just now' }]);
   };
 
-  const handleLocationDetailsSubmit = () => {
-    if (!district.trim() || !state.trim()) return;
-    setLocation(`${district.trim()}, ${state.trim()}`);
+  const handleLocationDetailsSubmit = (skip = false) => {
+    if (skip) {
+      setDistrict('');
+      setState('');
+      setLocation('');
+    } else {
+      if (!district.trim() && !state.trim()) return;
+      setLocation([district.trim(), state.trim()].filter(Boolean).join(', '));
+    }
     setOnboardingStep(4);
-    setChatMessages(prev => [...prev, { sender: 'SAHAY', text: 'Thank you. Please share the name and phone number of a trusted emergency contact. This helps us guide support if you need urgent care.', time: 'Just now' }]);
+    setChatMessages(prev => [...prev, { sender: 'SAHAY', text: 'If you want, share a trusted emergency contact. Only your assigned counsellor can see it, and only if your check-in needs follow-up. You can skip this.', time: 'Just now' }]);
   };
 
-  const handleContactSubmit = () => {
-    if (!trustedContact.trim() || !trustedPhone.trim()) return;
-    onSaveSensitiveContact({ nameAge: nameAge.trim(), district: district.trim(), state: state.trim(), areaType, trustedContact: trustedContact.trim(), trustedPhone: trustedPhone.trim() });
+  const handleContactSubmit = (skip = false) => {
+    if (skip) {
+      setTrustedContact('');
+      setTrustedPhone('');
+    } else {
+      if (!trustedContact.trim() && !trustedPhone.trim()) return;
+      onSaveSensitiveContact({ nameAge: nameAge.trim(), district: district.trim(), state: state.trim(), areaType, trustedContact: trustedContact.trim(), trustedPhone: trustedPhone.trim() });
+    }
     setOnboardingStep(5);
     setChatMessages(prev => [...prev, { sender: 'SAHAY', text: 'Thank you. How are you feeling right now, and how can I best assist you today?', time: 'Just now' }]);
+  };
+
+  const screeningAnswers = isAtrocityCase ? {
+    neuroStress: neuroStress || undefined,
+    trustWithdrawal: trustWithdrawal || undefined,
+    existentialTrauma: existentialTrauma || undefined
+  } : {};
+
+  const handleDeleteCheckin = async () => {
+    if (!savedCheckin) return;
+    setDeleteStatus('deleting');
+    try {
+      const res = await fetch('/api/checkins', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(savedCheckin)
+      });
+      if (!res.ok) throw new Error();
+      setDeleteStatus('deleted');
+      setSavedCheckin(null);
+      setAssignedSpecialist(null);
+    } catch {
+      setDeleteStatus('error');
+    }
+  };
+
+  // Leaves immediately for a neutral site and replaces this page in history.
+  const handleQuickExit = () => {
+    setChatMessages([]);
+    setUserInputText('');
+    window.location.replace('https://www.google.com');
   };
 
   const handleSendMessage = async (moodOverride?: string) => {
@@ -270,13 +318,8 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
           message: userMsg,
           mood: activeMood,
           moodScore: mood?.score ?? 0,
-          location: { label: location, current: currentLocation },
           isAtrocityRelated: Boolean(isAtrocityCase),
-          triageDimensions: isAtrocityCase ? {
-            neuroStress,
-            trustWithdrawal,
-            existentialTrauma
-          } : undefined
+          triageDimensions: isAtrocityCase ? screeningAnswers : undefined
         })
       });
 
@@ -292,8 +335,9 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
         currentLocationShared: Boolean(currentLocation)
       });
 
-      // Persist to secure backend database and obtain auto-assigned counsellor
+      // Persist to the backend (sensitive fields are encrypted server-side) and obtain the assigned counsellor
       let assignedOfficer = isAtrocityCase || result.riskScore >= 75 ? 'Riya' : 'Ayush';
+      let persisted = false;
       try {
         const checkinRes = await fetch('/api/checkins', {
           method: 'POST',
@@ -306,9 +350,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
             predictedRiskScore: result.riskScore,
             riskLevel: result.riskLevel,
             isAtrocityRelated: Boolean(isAtrocityCase),
-            neuroStress: isAtrocityCase ? neuroStress : undefined,
-            trustWithdrawal: isAtrocityCase ? trustWithdrawal : undefined,
-            existentialTrauma: isAtrocityCase ? existentialTrauma : undefined,
+            ...screeningAnswers,
             locationLabel: location || undefined,
             currentLocationShared: Boolean(currentLocation),
             trustedContactName: trustedContact || undefined,
@@ -319,6 +361,11 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
 
         if (checkinRes.ok) {
           const checkinData = await checkinRes.json();
+          persisted = true;
+          if (checkinData.checkinId && checkinData.deleteToken) {
+            setSavedCheckin({ checkinId: checkinData.checkinId, deleteToken: checkinData.deleteToken });
+            setDeleteStatus('idle');
+          }
           if (checkinData.assignedCounsellor) {
             assignedOfficer = checkinData.assignedCounsellor;
             const titles: Record<string, string> = {
@@ -342,7 +389,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
         const detectedFactors: string[] = [];
         if (isAtrocityCase) detectedFactors.push('PoA Act Atrocity Screening Positive');
         if (result.riskScore >= 70) detectedFactors.push('AI check-in risk threshold crossed');
-        if (neuroStress && neuroStress !== 'None') detectedFactors.push(`Neuro stress: ${neuroStress}`);
+        if (isAtrocityCase && neuroStress && neuroStress !== 'None') detectedFactors.push(`Neuro stress: ${neuroStress}`);
         if (currentLocation) detectedFactors.push('Current location shared for follow-up');
 
         onAddNewCheckinAlert({
@@ -358,59 +405,35 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
           time: 'Just now',
           assignedOfficer: assignedOfficer,
           status: 'Open',
-          location: currentLocation
+          location: currentLocation || undefined
         });
       }
 
       setChatMessages(prev => [...prev, {
         sender: 'SAHAY',
-        text: result.message,
+        text: persisted
+          ? result.message
+          : `${result.message} However, your check-in could not be saved for a counsellor right now. If you need help, call 14416 or 112.`,
         time: 'Just now'
       }]);
     } catch {
-      const fallbackRiskLevel = (mood?.score ?? 0) >= 75 ? 'Critical' : (mood?.score ?? 0) >= 50 ? 'High' : (mood?.score ?? 0) >= 25 ? 'Moderate' : 'Low';
+      // The server could not be reached, so nothing was saved or routed. Say so plainly.
       const fallbackScore = mood?.score ?? (isAtrocityCase ? 65 : 35);
-      const fallbackResult = {
-        title: 'Local support summary',
-        message: 'Thank you for checking in. Your feelings matter, and you do not have to manage this by yourself. SAHAY has securely routed your check-in to a dedicated counsellor who can guide you toward government support.',
-        steps: ['Take a slow breath; you are being heard.', 'SAHAY has passed this check-in to your assigned counsellor.', 'If you feel unsafe or overwhelmed, SAHAY can guide you to immediate government help at 14416.'],
+      const fallbackRiskLevel = fallbackScore >= 75 ? 'Critical' : fallbackScore >= 50 ? 'High' : fallbackScore >= 25 ? 'Moderate' : 'Low';
+      setAnalysisResult({
+        title: 'Check-in not sent',
+        message: 'We could not reach SAHAY right now, so this check-in was not saved and no counsellor has been notified. Please try again in a moment.',
+        steps: ['Check your internet connection and send again.', 'If you feel unsafe, call 112 now.', 'For mental-health support at any time, call Tele-MANAS at 14416.'],
         riskScore: fallbackScore,
         riskLevel: fallbackRiskLevel,
-        rationale: 'Local evaluation based on check-in responses and privacy-first routing.'
-      };
-      setAnalysisResult(fallbackResult);
-      onSaveCheckin({
-        message: userMsg,
-        mood: activeMood || 'Not selected',
-        riskScore: fallbackResult.riskScore,
-        riskLevel: fallbackResult.riskLevel,
-        locationLabel: location || undefined,
-        currentLocationShared: Boolean(currentLocation)
+        rationale: 'Estimated on this device from the feeling you selected. Nothing was sent.',
+        source: 'offline'
       });
-
-      const fallbackOfficer = isAtrocityCase ? 'Riya' : 'Ayush';
-      setAssignedSpecialist({
-        name: fallbackOfficer,
-        title: fallbackOfficer === 'Riya' ? 'Senior Trauma Specialist' : 'Case Manager'
-      });
-
-      if (fallbackScore >= 50 || isAtrocityCase) {
-        onAddNewCheckinAlert({
-          id: `LIVE-${Date.now().toString().slice(-6)}`,
-          caseId: 'SAHAY-LIVE',
-          victimAlias: nameAge || 'Private live check-in',
-          district: location || 'Location not shared',
-          riskScore: fallbackScore,
-          previousScore: 0,
-          change: fallbackScore,
-          severity: fallbackScore >= 75 ? 'Critical' : 'High',
-          detectedFactors: isAtrocityCase ? ['PoA Act Atrocity Screening Positive', 'Immediate human triage allocated'] : ['Check-in risk threshold crossed'],
-          time: 'Just now',
-          assignedOfficer: fallbackOfficer,
-          status: 'Open',
-          location: currentLocation || undefined
-        });
-      }
+      setChatMessages(prev => [...prev, {
+        sender: 'SAHAY',
+        text: 'I could not reach the server, so this check-in was not sent. If you need help now, call 14416, or 112 in an emergency.',
+        time: 'Just now'
+      }]);
     } finally {
       setLoadingStep(0);
     }
@@ -446,9 +469,15 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
           <span>← Back to Overview</span>
           <kbd className="hidden sm:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-mono text-[#8f8f8f] bg-[#f2f2f2] border border-[#ebebeb] rounded">Esc</kbd>
         </button>
-        <span className="text-[11px] font-mono text-[#8f8f8f] hidden sm:inline">
-          DPDP Act 2023 · Private Check-in
-        </span>
+        <button
+          type="button"
+          onClick={handleQuickExit}
+          title="Leave this page immediately"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 py-2 px-3.5 rounded-xl shadow-2xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[44px] transition"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Quick exit</span>
+        </button>
       </div>
 
       {/* Mobile Header Banner */}
@@ -464,6 +493,26 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
           I will first check your immediate safety, then help connect you with the right support. Take your time.
         </p>
       </div>
+
+      {/* What happens to what you share */}
+      <details className="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 text-xs text-blue-950 group">
+        <summary className="flex items-center gap-2 font-semibold cursor-pointer list-none">
+          <Info className="w-4 h-4 text-[#0070f3] shrink-0" />
+          <span>Before you start: what happens to what you share</span>
+          <span className="ml-auto text-[10px] font-mono text-[#0070f3] group-open:hidden">Show</span>
+          <span className="ml-auto text-[10px] font-mono text-[#0070f3] hidden group-open:inline">Hide</span>
+        </summary>
+        <ul className="mt-3 space-y-1.5 list-disc pl-5 leading-relaxed">
+          <li>Only your message and feeling are needed. Name, age, district, trusted contact and location are optional, and each has a Skip button.</li>
+          <li>Your message, feeling and any screening answers go to an AI service (Google Gemini) to suggest next steps. Phone numbers and emails are removed first. Your name, contact and location are never sent to it.</li>
+          <li>Every check-in is assigned to a counsellor. If the estimated risk is 50 or more, or you mark it as atrocity-related, an alert goes to that counsellor and a District, State or National authority depending on the score.</li>
+          <li>Your trusted contact is visible only to your assigned counsellor. Stored details are encrypted and deleted automatically after 180 days. You can delete a check-in right after sending it.</li>
+          <li>On a shared phone or computer, use a private/incognito window. The red Quick exit button leaves this page immediately.</li>
+        </ul>
+        <button type="button" onClick={() => onNavigateTab('privacy')} className="mt-3 text-[11px] font-semibold text-[#0070f3] hover:underline">
+          Read the full privacy details →
+        </button>
+      </details>
 
       {/* Safety-first onboarding */}
       <div
@@ -555,9 +604,12 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
                     Peer-Reviewed Trauma Triage Dimensions (ScienceDirect / BMC / NLM)
                   </span>
                   <span className="text-[10px] bg-white px-2 py-0.5 rounded border border-blue-200 font-mono text-[#4d4d4d]">
-                    Confidential Clinical Screening
+                    Optional screening
                   </span>
                 </div>
+                <p className="text-[11px] text-[#4d4d4d] leading-relaxed">
+                  Answer only what you want to. Answers are used to estimate how urgently you need support, and are shown to your assigned counsellor and, if an alert is raised, the escalation authority. They are not a diagnosis.
+                </p>
 
                 {/* Dimension 1 */}
                 <div className="space-y-1.5">
@@ -658,13 +710,25 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNeuroStress('');
+                      setTrustWithdrawal('');
+                      setExistentialTrauma('');
+                      handleAtrocityDimensionsSubmit();
+                    }}
+                    className="rounded-xl border border-[#ebebeb] bg-white px-4 py-2.5 text-xs font-semibold text-[#4d4d4d] hover:bg-[#fafafa] hover:border-slate-300 active:scale-95 transition"
+                  >
+                    Skip these questions
+                  </button>
                   <button
                     type="button"
                     onClick={handleAtrocityDimensionsSubmit}
                     className="rounded-xl bg-[#171717] px-4 py-2 text-xs font-semibold text-white hover:bg-black active:scale-95 transition shadow-xs flex items-center space-x-1.5"
                   >
-                    <span>Proceed to Name & Location</span>
+                    <span>Continue</span>
                     <span>→</span>
                   </button>
                 </div>
@@ -673,13 +737,18 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
           </div>
         ) : onboardingStep === 2 ? (
           <div className="space-y-3">
-            <label htmlFor="name-age" className="text-sm font-semibold text-[#171717]">What name would you like me to call you, and what is your age?</label>
-            <input id="name-age" value={nameAge} onChange={(event) => setNameAge(event.target.value)} placeholder="For example: Rahul, 24" className="w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
-            <button type="button" onClick={handleNameAgeSubmit} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Continue</button>
+            <label htmlFor="name-age" className="text-sm font-semibold text-[#171717]">What name would you like me to call you, and what is your age? <span className="font-normal text-[#8f8f8f]">(optional)</span></label>
+            <input id="name-age" value={nameAge} onChange={(event) => setNameAge(event.target.value)} placeholder="An alias is fine, e.g. Asha, 24" maxLength={80} className="w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
+            <p className="text-[11px] text-[#8f8f8f]">Shown to your assigned counsellor and, if an alert is raised, the escalation authority. Never sent to the AI service.</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => handleNameAgeSubmit()} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Continue</button>
+              <button type="button" onClick={() => handleNameAgeSubmit(true)} className="rounded-xl border border-[#ebebeb] bg-white px-4 py-2.5 text-xs font-semibold text-[#4d4d4d] hover:bg-[#fafafa] hover:border-slate-300 active:scale-95 transition">Skip</button>
+            </div>
           </div>
         ) : onboardingStep === 3 ? (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-[#171717]">Where are you currently located?</p>
+            <p className="text-sm font-semibold text-[#171717]">Which district and state are you in? <span className="font-normal text-[#8f8f8f]">(optional)</span></p>
+            <p className="text-[11px] text-[#8f8f8f]">Helps route you to local support. Shown to your counsellor and, if an alert is raised, the escalation authority.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input value={district} onChange={(event) => setDistrict(event.target.value)} placeholder="District" className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
               <input value={state} onChange={(event) => setState(event.target.value)} placeholder="State" className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
@@ -704,16 +773,23 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
                 );
               })}
             </div>
-            <button type="button" onClick={handleLocationDetailsSubmit} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Continue</button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => handleLocationDetailsSubmit()} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Continue</button>
+              <button type="button" onClick={() => handleLocationDetailsSubmit(true)} className="rounded-xl border border-[#ebebeb] bg-white px-4 py-2.5 text-xs font-semibold text-[#4d4d4d] hover:bg-[#fafafa] hover:border-slate-300 active:scale-95 transition">Skip</button>
+            </div>
           </div>
         ) : onboardingStep === 4 ? (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-[#171717]">Please provide a trusted emergency contact.</p>
+            <p className="text-sm font-semibold text-[#171717]">Would you like to add a trusted emergency contact? <span className="font-normal text-[#8f8f8f]">(optional)</span></p>
+            <p className="text-[11px] text-[#8f8f8f]">Only your assigned counsellor can see this, and only if your check-in raises an alert. It is never shared with authorities or the AI service. Only add someone who would be safe to contact.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input value={trustedContact} onChange={(event) => setTrustedContact(event.target.value)} placeholder="Contact name" className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
-              <input value={trustedPhone} onChange={(event) => setTrustedPhone(event.target.value)} placeholder="Phone number" inputMode="tel" className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
+              <input value={trustedContact} onChange={(event) => setTrustedContact(event.target.value)} placeholder="Contact name" maxLength={80} className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
+              <input value={trustedPhone} onChange={(event) => setTrustedPhone(event.target.value)} placeholder="Phone number" inputMode="tel" maxLength={20} className="rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none" />
             </div>
-            <button type="button" onClick={handleContactSubmit} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Continue to feeling check-in</button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => handleContactSubmit()} className="rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-semibold text-white hover:bg-black active:scale-95 transition">Save and continue</button>
+              <button type="button" onClick={() => handleContactSubmit(true)} className="rounded-xl border border-[#ebebeb] bg-white px-4 py-2.5 text-xs font-semibold text-[#4d4d4d] hover:bg-[#fafafa] hover:border-slate-300 active:scale-95 transition">Skip</button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -797,11 +873,14 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
             className="mt-2 w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-3.5 py-2.5 text-xs text-[#171717] focus:border-[#0070f3] focus:outline-none"
           />
           <p className="mt-1 text-[10px] text-[#8f8f8f]">Do not enter your exact address. You can leave this blank.</p>
+          <p className="mt-3 text-[10px] text-[#4d4d4d] leading-relaxed">
+            Sharing current location sends your exact GPS position (to within a few metres) with this check-in. It is shown to your assigned counsellor and, if an alert is raised, the escalation authority, and is stored encrypted until the check-in is deleted (automatically after 180 days).
+          </p>
           <button
             type="button"
             onClick={handleShareCurrentLocation}
             disabled={locationStatus === 'requesting' || locationStatus === 'shared'}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-semibold text-[#0070f3] hover:bg-blue-100 disabled:cursor-default disabled:opacity-80"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] font-semibold text-[#0070f3] hover:bg-blue-100 disabled:cursor-default disabled:opacity-80"
           >
             <MapPin className="w-3.5 h-3.5" />
             {locationStatus === 'requesting' ? 'Requesting location permission...' : locationStatus === 'shared' ? 'Current location shared' : 'Share current location'}
@@ -826,7 +905,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
               </div>
             </div>
             <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
-              Online • Encrypted
+              Connected
             </span>
           </div>
 
@@ -839,7 +918,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
                 </span>
               </div>
               <span className="text-[10px] font-mono text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
-                Alert Dispatched to Counsellor Dashboard
+                {assignedSpecialist.alertId ? 'Alert sent to your counsellor' : 'Assigned for review'}
               </span>
             </div>
           )}
@@ -893,7 +972,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
                 <Mic className="w-4 h-4" />
               </button>
               <button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 className="px-4 py-2 bg-[#171717] hover:bg-black text-white text-xs font-semibold rounded-xl transition shadow-xs flex items-center space-x-1"
               >
                 <span>Send</span>
@@ -901,7 +980,7 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
               </button>
             </div>
             <div className="flex justify-between items-center text-[10px] text-[#8f8f8f] px-1 font-mono">
-              <span>{isRecording ? 'Listening... speak clearly' : 'Voice-to-text: English (India)'}</span>
+              <span>{isRecording ? 'Listening... speak clearly' : 'Voice-to-text uses your browser’s speech service (Google in Chrome)'}</span>
               <span>Review text before sending</span>
             </div>
             {voiceError && <p className="px-1 text-[10px] text-red-600">{voiceError}</p>}
@@ -939,6 +1018,9 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
               <div className="space-y-2 text-slate-700">
                 <p className="text-[12px] leading-relaxed text-[#171717]">{analysisResult.message}</p>
                 <p className="text-[11px] text-[#8f8f8f]">Why: {analysisResult.rationale}</p>
+                <p className="text-[10px] font-mono text-[#8f8f8f]">
+                  Estimated by: {analysisResult.source === 'gemini' ? 'Google Gemini AI' : analysisResult.source === 'openai' ? 'OpenAI' : analysisResult.source === 'offline' ? 'this device (not sent)' : 'simple rules (AI not used)'}
+                </p>
                 <ul className="space-y-1.5 list-disc pl-4 text-[#4d4d4d]">
                   {analysisResult.steps.map((step: string, index: number) => (
                     <li key={index}>{step}</li>
@@ -951,6 +1033,28 @@ export const VictimCheckinView: React.FC<VictimCheckinViewProps> = ({
               <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
               <p className="text-xs">Share how you feel, and the app will guide you toward a safe support plan.</p>
               <span className="text-[10px] font-mono text-slate-400 block">Support-only check-in</span>
+            </div>
+          )}
+
+          {(savedCheckin || deleteStatus !== 'idle') && (
+            <div className="border border-[#ebebeb] rounded-xl p-3 space-y-2 text-xs">
+              {deleteStatus === 'deleted' ? (
+                <p className="text-emerald-700 font-semibold">Your check-in and any alert from it have been deleted.</p>
+              ) : (
+                <>
+                  <p className="text-[#4d4d4d]">Changed your mind? You can delete this check-in now. This also removes any alert sent to your counsellor.</p>
+                  <button
+                    type="button"
+                    onClick={handleDeleteCheckin}
+                    disabled={deleteStatus === 'deleting'}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-800 hover:bg-red-100 disabled:opacity-60"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {deleteStatus === 'deleting' ? 'Deleting…' : 'Delete this check-in'}
+                  </button>
+                  {deleteStatus === 'error' && <p className="text-red-600">Could not delete right now. Please try again.</p>}
+                </>
+              )}
             </div>
           )}
 

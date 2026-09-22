@@ -113,7 +113,7 @@ export const CaseDetailView: React.FC<CaseDetailViewProps> = ({
         <div className="flex items-center space-x-2 text-xs text-[#8f8f8f] font-mono">
           <span>MoSJE Protocol</span>
           <span>•</span>
-          <span>DPDP Encrypted Case Record</span>
+          <span>Restricted case record · access is audited</span>
         </div>
       </div>
 

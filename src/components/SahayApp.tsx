@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { 
   INITIAL_CASES, 
   INITIAL_ALERTS, 
-  INITIAL_AUDIT_LOGS,
   COUNSELLOR_AVAILABILITY,
   getAuthorityRecipient,
   getRiskCategory
@@ -21,11 +20,12 @@ import { AuthRoleModal } from './AuthRoleModal';
 export const SahayApp: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<string>('landing');
   const [activeRole, setActiveRole] = useState<string>('Victim / Complainant');
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; name: string; role: string; title?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; name: string; role: string; title?: string; accountType?: string } | null>(null);
   const [selectedCaseId, setSelectedCaseId] = useState<string>('SAHAY-1042');
   const [isRoleModalOpen, setIsRoleModalOpen] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const isVictimRole = activeRole === 'Victim / Complainant';
+  const isStaff = currentUser?.accountType === 'counsellor' || currentUser?.accountType === 'authority';
   const victimAllowedTabs = ['landing', 'checkin', 'privacy'];
   const effectiveCurrentTab = isVictimRole && !victimAllowedTabs.includes(currentTab)
     ? 'landing'
@@ -45,7 +45,6 @@ export const SahayApp: React.FC = () => {
   // Stateful Data Collections
   const [cases, setCases] = useState<CaseData[]>(INITIAL_CASES);
   const [alerts, setAlerts] = useState<AlertItem[]>(INITIAL_ALERTS);
-  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(INITIAL_AUDIT_LOGS);
   const [checkins, setCheckins] = useState<CheckinRecord[]>([]);
   const [sensitiveRecords, setSensitiveRecords] = useState<SensitiveSupportRecord[]>([]);
 
@@ -150,23 +149,21 @@ export const SahayApp: React.FC = () => {
         status: newAlert.riskScore >= 70 ? 'Requires Human Review' : caseData.status
       };
     }));
-    handleAddAuditLog({
-      id: `LOG-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      actor: 'SAHAY AI Triage',
-      role: 'Automated Decision Support',
-      action: 'AUTO_ASSIGN_COUNSELLOR',
-      targetCase: newAlert.caseId,
-      details: `Risk score ${newAlert.riskScore} crossed the automatic assignment threshold. Assigned to ${assignedCounsellor} based on availability and escalated to ${authorityRecipient}.`
-    });
 
     function prevCaseCount(counsellorName: string) {
       return alerts.filter(alert => alert.assignedOfficer === counsellorName && alert.status !== 'Resolved').length;
     }
   };
 
+  // Staff actions are recorded server-side; actor and role come from the signed-in session.
+  // Victim check-ins are audited by the server when they are saved, so nothing is sent from here.
   const handleAddAuditLog = (log: AuditLogItem) => {
-    setAuditLogs(prev => [log, ...prev]);
+    if (!isStaff) return;
+    fetch('/api/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: log.action, targetCase: log.targetCase, details: log.details })
+    }).catch(() => undefined);
   };
 
   const handleSaveCheckin = (checkin: Omit<CheckinRecord, 'id' | 'timestamp'>) => {
@@ -176,21 +173,11 @@ export const SahayApp: React.FC = () => {
       timestamp: new Date().toLocaleString()
     };
     setCheckins(prev => [record, ...prev]);
-    handleAddAuditLog({
-      id: `LOG-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-      actor: 'SAHAY AI Check-in',
-      role: 'Victim Support Flow',
-      action: 'SAVE_CHECKIN_RECORD',
-      targetCase: record.id,
-      details: `Saved ${record.riskLevel} risk check-in. Current location shared: ${record.currentLocationShared ? 'yes' : 'no'}.`
-    });
   };
 
   const handleSaveSensitiveContact = (record: Omit<SensitiveSupportRecord, 'id' | 'timestamp'>) => {
     const savedRecord: SensitiveSupportRecord = { ...record, id: `SAFE-${Date.now().toString().slice(-6)}`, timestamp: new Date().toLocaleString() };
     setSensitiveRecords(prev => [savedRecord, ...prev]);
-    handleAddAuditLog({ id: `LOG-${Date.now().toString().slice(-4)}`, timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19), actor: 'SAHAY Support Flow', role: 'Restricted Safeguarding Record', action: 'SAVE_TRUSTED_CONTACT', targetCase: savedRecord.id, details: 'Trusted-contact details stored for restricted counsellor and authority access.' });
   };
 
   const handleRoleSelect = (role: string, targetTab: string, userDetails?: any) => {
@@ -202,6 +189,9 @@ export const SahayApp: React.FC = () => {
   };
 
   const enterVictimMode = () => {
+    if (currentUser?.accountType) {
+      fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+    }
     setActiveRole('Victim / Complainant');
     setCurrentUser(null);
     setCurrentTab('landing');
@@ -285,13 +275,17 @@ export const SahayApp: React.FC = () => {
 
         {effectiveCurrentTab === 'analytics' && (
           <div key="analytics" className="tab-panel">
-            <DistrictAnalyticsView sensitiveRecords={sensitiveRecords} />
+            <DistrictAnalyticsView />
           </div>
         )}
 
         {effectiveCurrentTab === 'privacy' && (
           <div key="privacy" className="tab-panel">
-            <PrivacyAuditView auditLogs={auditLogs} />
+            <PrivacyAuditView
+              isStaff={isStaff}
+              isRegisteredVictim={currentUser?.accountType === 'registered_victim'}
+              onAccountDeleted={enterVictimMode}
+            />
           </div>
         )}
       </main>
@@ -312,7 +306,7 @@ export const SahayApp: React.FC = () => {
             <span className="font-bold text-[#171717]">SAHAY Platform</span> • Ministry of Social Justice & Empowerment (MoSJE)
           </div>
           <div className="flex items-center space-x-4 font-mono text-[11px]">
-            <button onClick={() => setCurrentTab('privacy')} className="hover:underline">DPDP Act 2023</button>
+            <button onClick={() => setCurrentTab('privacy')} className="hover:underline">Privacy & data use</button>
             <span>•</span>
             <button onClick={() => setCurrentTab('privacy')} className="hover:underline">System Audit</button>
           </div>
