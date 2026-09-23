@@ -130,7 +130,9 @@ export const POST: APIRoute = async (context) => {
       });
 
       if (!geminiResponse.ok) {
-        throw new Error(`Gemini API error: ${geminiResponse.status}`);
+        // Google's error body explains the cause (bad key, quota, model name) and contains no user content.
+        const detail = (await geminiResponse.text()).slice(0, 300);
+        throw new Error(`Gemini API error ${geminiResponse.status} (model "${model}"): ${detail}`);
       }
 
       const data = await geminiResponse.json();
@@ -155,7 +157,8 @@ export const POST: APIRoute = async (context) => {
       });
 
       if (!openAIResponse.ok) {
-        throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+        const detail = (await openAIResponse.text()).slice(0, 300);
+        throw new Error(`OpenAI API error ${openAIResponse.status}: ${detail}`);
       }
 
       const data = await openAIResponse.json();
@@ -166,7 +169,8 @@ export const POST: APIRoute = async (context) => {
       throw new Error('No content returned from AI provider.');
     }
 
-    const parsed = JSON.parse(content);
+    // Some models wrap JSON in ```json fences; strip them before parsing.
+    const parsed = JSON.parse(content.replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, ''));
     const riskScore = Number.isFinite(parsed.riskScore) ? Math.max(0, Math.min(100, Math.round(parsed.riskScore))) : localTriage(triageInput).riskScore;
     return jsonResponse({
       title: typeof parsed.title === 'string' ? parsed.title : 'Support summary',
@@ -178,7 +182,10 @@ export const POST: APIRoute = async (context) => {
       source: provider === 'Gemini' ? 'gemini' : 'openai'
     });
   } catch (err) {
-    console.error('[SAHAY] AI triage failed; using local rules:', err instanceof Error ? err.message : err);
+    const reason = err instanceof Error
+      ? `${err.name}: ${err.message || '(no message)'}${err.cause ? ` | cause: ${String((err.cause as Error).message ?? err.cause)}` : ''}`
+      : String(err);
+    console.error(`[SAHAY] AI triage failed (provider: ${provider ?? 'none'}); using local rules. ${reason}`);
     const { riskScore, riskLevel } = localTriage(triageInput);
     return jsonResponse({
       title: 'Support check-in summary',
