@@ -54,6 +54,53 @@ function localTriage(input: { moodScore: number; isAtrocityRelated: boolean; neu
   return { riskScore: score, riskLevel: riskLevelFor(score) };
 }
 
+// Overload / rate-limit / server errors are worth retrying or trying another model.
+const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * Tries GEMINI_MODEL, then each model in GEMINI_FALLBACK_MODELS, retrying each
+ * once after a short pause on transient errors (e.g. 503 "high demand").
+ */
+async function callGeminiWithFallback(apiKey: string, userContent: string): Promise<string | undefined> {
+  const primary = readEnv('GEMINI_MODEL') || 'gemini-3.6-flash';
+  const fallbacks = (readEnv('GEMINI_FALLBACK_MODELS') || 'gemini-3.5-flash,gemini-2.5-flash')
+    .split(',').map(m => m.trim()).filter(Boolean);
+  const models = [primary, ...fallbacks.filter(m => m !== primary)];
+  let lastError: Error | undefined;
+
+  for (const model of models) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Key in a header, not the URL, so it never lands in proxy or access logs.
+          'x-goog-api-key': apiKey
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: userContent }] }],
+          generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+        }),
+        signal: AbortSignal.timeout(20000)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text;
+      }
+
+      // Google's error body explains the cause (bad key, quota, model name) and contains no user content.
+      const detail = (await response.text()).slice(0, 300);
+      lastError = new Error(`Gemini API error ${response.status} (model "${model}"): ${detail}`);
+      if (!TRANSIENT_STATUS.has(response.status)) throw lastError;
+      console.warn(`[SAHAY] Gemini ${response.status} on "${model}" (attempt ${attempt}); retrying/falling back.`);
+      if (attempt === 1) await new Promise(resolve => setTimeout(resolve, 800));
+    }
+  }
+  throw lastError;
+}
+
 export const POST: APIRoute = async (context) => {
   const geminiKey = readEnv('GEMINI_API_KEY');
   const openAIKey = readEnv('OPENAI_API_KEY');
@@ -114,29 +161,7 @@ export const POST: APIRoute = async (context) => {
     let content: string | undefined;
 
     if (provider === 'Gemini') {
-      const model = readEnv('GEMINI_MODEL') || 'gemini-2.0-flash';
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Key in a header, not the URL, so it never lands in proxy or access logs.
-          'x-goog-api-key': geminiKey!
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ role: 'user', parts: [{ text: userContent }] }],
-          generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
-        })
-      });
-
-      if (!geminiResponse.ok) {
-        // Google's error body explains the cause (bad key, quota, model name) and contains no user content.
-        const detail = (await geminiResponse.text()).slice(0, 300);
-        throw new Error(`Gemini API error ${geminiResponse.status} (model "${model}"): ${detail}`);
-      }
-
-      const data = await geminiResponse.json();
-      content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      content = await callGeminiWithFallback(geminiKey!, userContent);
     } else if (provider === 'OpenAI') {
       const model = readEnv('OPENAI_MODEL') || 'gpt-4o-mini';
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
